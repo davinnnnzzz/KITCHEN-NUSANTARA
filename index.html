@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nusantara Kitchen POS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-screen" class="welcome-container">
+        <div class="login-box">
+            <h1>🥘 Nusantara Kitchen</h1>
+            <p>Silakan masuk untuk memulai shift Anda</p>
+            <input type="text" id="login-user" placeholder="Nama Kasir" autocomplete="off">
+            <input type="password" id="login-pin" placeholder="Masukkan PIN" autocomplete="off">
+            <p id="login-error" class="error-text hidden">PIN salah! Silakan coba lagi.</p>
+            <button onclick="login()">Mulai Shift</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden">
+        <div class="header">
+            <div class="logo">🥘 Nusantara Kitchen</div>
+            <div class="nav-menu">
+                <button id="tab-pos" class="nav-btn active" onclick="gantiTab('pos')">🛒 Menu Kasir</button>
+                <button id="tab-dashboard" class="nav-btn" onclick="gantiTab('dashboard')">📊 Laporan Harian</button>
+            </div>
+            <div class="user-info" id="kasir-name">👨‍🍳 Kasir</div>
+        </div>
+
+        <div class="running-text-container">
+            <div class="running-text">
+                🌟 Selamat datang di Nusantara Kitchen! Tetap semangat, berikan pelayanan terbaik dengan senyum ramah Nusantara. Target hari ini: 100 Transaksi! 🚀
+            </div>
+        </div>
+        
+        <div id="pos-view" class="container">
+            <div class="product-section">
+                <div class="category-filters">
+                    <button class="filter-btn active" onclick="filterMenu('semua', this)">Semua</button>
+                    <button class="filter-btn" onclick="filterMenu('makanan', this)">🥘 Makanan</button>
+                    <button class="filter-btn" onclick="filterMenu('minuman', this)">🥤 Minuman</button>
+                    <button class="filter-btn" onclick="filterMenu('dessert', this)">🍰 Dessert</button>
+                </div>
+                <div id="product-list" class="grid-container"></div>
+            </div>
+
+            <div class="cart-section">
+                <div class="order-header">
+                    <h2>🧾 Pesanan</h2>
+                    <div class="order-info">
+                        <select id="order-type" onchange="aturTipePesanan()">
+                            <option value="Dine-In">🍽️ Dine-In</option>
+                            <option value="Takeaway">🛍️ Takeaway</option>
+                        </select>
+                        <input type="text" id="customer-info" placeholder="No. Meja (Cth: 12)" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="cart-items-wrapper">
+                    <ul id="cart-items"></ul>
+                </div>
+                
+                <div class="checkout-footer">
+                    <div class="payment-container">
+                        <div class="input-group">
+                            <label>Metode Pembayaran:</label>
+                            <select id="payment-method" onchange="aturMetodeBayar()">
+                                <option value="Cash">💵 Tunai (Cash)</option>
+                                <option value="QRIS">📱 QRIS</option>
+                                <option value="Transfer Bank">🏦 Transfer Bank</option>
+                            </select>
+                        </div>
+                        <div class="input-group" id="cash-input-group">
+                            <label>Uang Diterima (Rp):</label>
+                            <input type="text" id="cash-amount" placeholder="Contoh: 100.000" oninput="formatRupiah(this)" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="calculation-section">
+                        <div class="calc-row"><span>Subtotal:</span> <span id="subtotal-price">Rp 0</span></div>
+                        <div class="calc-row"><span>PPN (11%):</span> <span id="tax-price">Rp 0</span></div>
+                        <div class="calc-row grand-total"><span>TOTAL:</span> <span id="total-price">Rp 0</span></div>
+                    </div>
+                    
+                    <button id="checkout-btn" onclick="prosesBayar()">PROSES PEMBAYARAN</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="dashboard-view" class="dashboard-container hidden">
+            <div class="dashboard-header">
+                <h2>Ringkasan Penjualan Hari Ini</h2>
+                <button onclick="updateDashboard()" class="btn-refresh">🔄 Refresh Data</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <h3>Total Pendapatan</h3>
+                    <h2 id="dash-revenue">Rp 0</h2>
+                </div>
+                <div class="stat-card green">
+                    <h3>Total Transaksi</h3>
+                    <h2 id="dash-trx-count">0</h2>
+                </div>
+                <div class="stat-card orange">
+                    <h3>Rata-rata Transaksi</h3>
+                    <h2 id="dash-avg">Rp 0</h2>
+                </div>
+            </div>
+            <div class="table-container">
+                <h3>Riwayat Transaksi Terakhir</h3>
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>ID Transaksi</th>
+                            <th>Waktu</th>
+                            <th>Tipe & Pelanggan</th>
+                            <th>Metode</th>
+                            <th>Total (Rp)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dash-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="struk-modal" class="modal hidden">
+        <div class="modal-content struk-content">
+            <div id="print-area">
+                <div class="struk-header">
+                    <h2>🥘 NUSANTARA KITCHEN</h2>
+                    <p>Jl. Rempah Nusantara No. 99, Jakarta</p>
+                    <p>================================</p>
+                </div>
+                <p id="struk-id" class="struk-text font-bold"></p>
+                <p id="struk-tanggal" class="struk-text"></p>
+                <p id="struk-pelanggan" class="struk-text font-bold"></p>
+                <p id="struk-metode" class="struk-text"></p>
+                <p>================================</p>
+                <ul id="struk-items" class="struk-list"></ul>
+                <p>================================</p>
+                <div class="struk-calc">
+                    <p class="struk-flex"><span>Subtotal:</span> <span id="struk-subtotal"></span></p>
+                    <p class="struk-flex"><span>PPN (11%):</span> <span id="struk-ppn"></span></p>
+                </div>
+                <h3 id="struk-total" class="struk-total-text"></h3>
+                
+                <div id="struk-cash-area">
+                    <p class="struk-flex"><span>Tunai:</span> <span id="struk-bayar"></span></p>
+                    <p class="struk-flex"><span>Kembali:</span> <span id="struk-kembali"></span></p>
+                </div>
+                <div id="struk-qris-area" class="hidden text-center">
+                    <p><strong>SCAN UNTUK MEMBAYAR</strong></p>
+                    <img id="qris-barcode" src="" alt="QRIS Barcode" width="150">
+                </div>
+                <p class="struk-footer">Terima Kasih!</p>
+            </div>
+            
+            <div class="struk-action-buttons no-print">
+                <button class="btn-print" onclick="cetakStruk()">🖨️ Cetak</button>
+                <button class="btn-close" onclick="tutupStruk()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
